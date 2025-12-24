@@ -4907,7 +4907,7 @@ body[data-theme="dark"] .hbg__btn,
 }
 
 .msf-icon {
-  opacity: 1;
+  opacity: 100%;
   color: #fff;
 }
 
