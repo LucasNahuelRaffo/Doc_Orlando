@@ -1,0 +1,56 @@
+/* ===== Azo Sans ===== */
+@font-face {
+  font-family: "Azo Sans";
+  src: url("./Fuentes/azosans/fonnts.com-Azo_Sans_Regular.otf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Azo Sans";
+  src: url("./Fuentes/azosans/fonnts.com-Azo_Sans_Medium.otf") format("opentype");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Azo Sans";
+  src: url("./Fuentes/azosans/fonnts.com-Azo_Sans_Bold.otf") format("opentype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* ===== Helvetica (tu carpeta helvetica) ===== */
+@font-face {
+  font-family: "Helvetica Custom";
+  src: url("./Fuentes/helvetica/helvetica-normal.ttf") format("truetype");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Helvetica Custom";
+  src: url("./Fuentes/helvetica/Helvetica-Bold.ttf") format("truetype");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+/* Tokens globales de tipografía */
+:root {
+  --font-heading: "Azo Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-body: "Helvetica Custom", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+
+body {
+  font-family: var(--font-body);
+}
+
+/* Títulos generales (si ya lo tenés, solo asegurate que usen la variable) */
+.h1, .h2, .h3, .hero__title {
+  font-family: var(--font-heading);
+}

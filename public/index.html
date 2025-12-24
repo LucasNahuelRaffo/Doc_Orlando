@@ -1,21 +1,24 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <link rel="icon" href="../src/img/Recurso 1.png" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#000000" />
-    <meta
-      name="description"
-      content="Web site created using create-react-app"
-    />
-    <link rel="apple-touch-icon" href="../src/img/Recurso 1.png" />
-    <!--
+
+<head>
+  <meta charset="utf-8" />
+  <link rel="icon" type="image/png" href="%PUBLIC_URL%/favicon_clean.png" sizes="32x32" />
+  <link rel="icon" type="image/png" href="%PUBLIC_URL%/favicon_clean.png" sizes="192x192" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="theme-color" content="#000000" />
+  <meta name="description" content="Web site created using create-react-app" />
+  <link rel="apple-touch-icon" href="%PUBLIC_URL%/favicon_clean.png" />
+  <!--
       manifest.json provides metadata used when your web app is installed on a
       user's mobile device or desktop. See https://developers.google.com/web/fundamentals/web-app-manifest/
     -->
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
-    <!--
+  <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+
+  <!-- Calendly widget CSS -->
+  <link href="https://assets.calendly.com/assets/external/widget.css" rel="stylesheet">
+
+  <!--
       Notice the use of %PUBLIC_URL% in the tags above.
       It will be replaced with the URL of the `public` folder during the build.
       Only files inside the `public` folder can be referenced from the HTML.
@@ -24,20 +27,331 @@
       work correctly both with client-side routing and a non-root public URL.
       Learn how to configure a non-root public URL by running `npm run build`.
     -->
-    <title>Doctor Orlando Estetica</title>
-  </head>
-  <body>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-    <div id="root"></div>
-    <!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
+  <title>Doctor Orlando Estetica</title>
 
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
+  <!-- Calendly widget script -->
+  <script src="https://assets.calendly.com/assets/external/widget.js" type="text/javascript" async></script>
+</head>
 
-      To begin the development, run `npm start` or `yarn start`.
-      To create a production bundle, use `npm run build` or `yarn build`.
-    -->
-  </body>
+<body>
+  <noscript>You need to enable JavaScript to run this app.</noscript>
+  <div id="root"></div>
+
+  <!-- Custom n8n Chat Widget -->
+  <style>
+    :root {
+      --chat-primary: #171F21;
+      --chat-bg: rgba(255, 255, 255, 0.95);
+      --chat-text: #1a1a1a;
+      --chat-glass: rgba(255, 255, 255, 0.1);
+    }
+
+    #n8n-chat-widget {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      z-index: 9999;
+      font-family: 'Inter', sans-serif;
+    }
+
+    #chat-button {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: var(--chat-primary);
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+
+    #chat-button:hover {
+      transform: scale(1.1);
+    }
+
+    #chat-button svg {
+      width: 30px;
+      height: 30px;
+      fill: white;
+    }
+
+    #chat-window {
+      position: absolute;
+      bottom: 70px;
+      right: 0;
+      width: 380px;
+      height: 550px;
+      max-height: calc(100vh - 220px);
+      background: var(--chat-bg);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+      display: none;
+      flex-direction: column;
+      overflow: hidden;
+      border: 1px solid rgba(0, 0, 0, 0.05);
+      animation: slideIn 0.3s ease-out;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    #chat-header {
+      background: var(--chat-primary);
+      color: white;
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    #chat-header img {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      border: 2px solid rgba(255, 255, 255, 0.2);
+    }
+
+    #chat-messages {
+      flex: 1;
+      padding: 20px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      background: #f8f9fa;
+    }
+
+    .message {
+      max-width: 80%;
+      padding: 12px 16px;
+      border-radius: 15px;
+      font-size: 14px;
+      line-height: 1.5;
+      position: relative;
+    }
+
+    .message.bot {
+      align-self: flex-start;
+      background: white;
+      color: var(--chat-text);
+      border-bottom-left-radius: 2px;
+      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.05);
+    }
+
+    .message.user {
+      align-self: flex-end;
+      background: var(--chat-primary);
+      color: white;
+      border-bottom-right-radius: 2px;
+    }
+
+    #chat-input-area {
+      padding: 15px;
+      background: white;
+      border-top: 1px solid rgba(0, 0, 0, 0.05);
+      display: flex;
+      gap: 10px;
+    }
+
+    #chat-input {
+      flex: 1;
+      border: 1px solid #eee;
+      padding: 10px 15px;
+      border-radius: 25px;
+      outline: none;
+      font-size: 14px;
+      transition: border-color 0.3s;
+    }
+
+    #chat-input:focus {
+      border-color: var(--chat-primary);
+    }
+
+    #send-btn {
+      background: var(--chat-primary);
+      border: none;
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: opacity 0.3s;
+    }
+
+    #send-btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    #send-btn svg {
+      width: 20px;
+      height: 20px;
+      fill: white;
+    }
+
+    .typing-indicator {
+      font-style: italic;
+      font-size: 12px;
+      color: #888;
+      margin-bottom: 5px;
+    }
+  </style>
+
+  <div id="n8n-chat-widget">
+    <div id="chat-window">
+      <div id="chat-header">
+        <img src="%PUBLIC_URL%/img/bot_avatar.png" alt="Avatar">
+        <div>
+          <div style="font-weight: 600; font-size: 16px;">Orlando-Agent</div>
+          <div style="font-size: 12px; opacity: 0.8;">Asistente de Estética</div>
+        </div>
+      </div>
+      <div id="chat-messages">
+        <div class="message bot">¡Hola! Soy el asistente del Dr. Orlando. ¿En qué puedo ayudarte hoy?</div>
+      </div>
+      <div id="chat-input-area">
+        <input type="text" id="chat-input" placeholder="Escribe tu mensaje..." autocomplete="off">
+        <button id="send-btn">
+          <svg viewBox="0 0 24 24">
+            <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
+          </svg>
+        </button>
+      </div>
+    </div>
+    <div id="chat-button">
+      <svg viewBox="0 0 24 24">
+        <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"></path>
+      </svg>
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const chatButton = document.getElementById('chat-button');
+      const chatWindow = document.getElementById('chat-window');
+      const chatInput = document.getElementById('chat-input');
+      const sendBtn = document.getElementById('send-btn');
+      const chatMessages = document.getElementById('chat-messages');
+      const webhookUrl = 'https://raffo123.app.n8n.cloud/webhook/chat/orlando';
+
+      let isChatOpen = false;
+
+      function toggleChat(forceOpen = false) {
+        if (forceOpen) {
+          isChatOpen = true;
+        } else {
+          isChatOpen = !isChatOpen;
+        }
+        chatWindow.style.display = isChatOpen ? 'flex' : 'none';
+        if (isChatOpen) chatInput.focus();
+      }
+
+      // Expose globally
+      window.toggleN8nChat = toggleChat;
+
+      chatButton.addEventListener('click', () => toggleChat());
+
+      async function sendMessage() {
+        const message = chatInput.value.trim();
+        if (!message) return;
+
+        // Add user message
+        addMessage(message, 'user');
+        chatInput.value = '';
+
+        // Show typing indicator
+        const typingId = 'typing-' + Date.now();
+        const typingDiv = document.createElement('div');
+        typingDiv.id = typingId;
+        typingDiv.className = 'typing-indicator';
+        typingDiv.innerText = 'Orlando-Agent está escribiendo...';
+        chatMessages.appendChild(typingDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+
+        try {
+          const response = await fetch(webhookUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ message: message })
+          });
+
+          let data = await response.json();
+          console.log('n8n Response Data:', data); // Debug log
+          document.getElementById(typingId).remove();
+
+          // If n8n returns an array, take the first item
+          if (Array.isArray(data)) data = data[0];
+
+          // Handle response mapping
+          let botReply = null;
+
+          const extractText = (obj) => {
+            if (typeof obj === 'string') return obj;
+            if (!obj) return null;
+            // Common keys in n8n/AI responses
+            const keys = ['reply', 'respuesta', 'text', 'message', 'output', 'response', 'content'];
+            for (const key of keys) {
+              if (obj[key]) {
+                if (typeof obj[key] === 'string') return obj[key];
+                if (typeof obj[key] === 'object') {
+                  const nested = extractText(obj[key]);
+                  if (nested) return nested;
+                }
+              }
+            }
+            // Fallback: first string value found
+            for (const val of Object.values(obj)) {
+              if (typeof val === 'string') return val;
+              if (typeof val === 'object' && val !== null) {
+                const nested = extractText(val);
+                if (nested) return nested;
+              }
+            }
+            return null;
+          };
+
+          botReply = extractText(data);
+
+          if (!botReply) {
+            botReply = "El asistente no devolvió una respuesta de texto. Revisa la configuración de n8n.";
+          }
+
+          addMessage(botReply, 'bot');
+        } catch (error) {
+          console.error('Fetch Error:', error);
+          if (document.getElementById(typingId)) document.getElementById(typingId).remove();
+          addMessage("Lo siento, no pude conectar con el servidor de n8n.", 'bot');
+        }
+      }
+
+      function addMessage(text, sender) {
+        const msgDiv = document.createElement('div');
+        msgDiv.className = `message ${sender}`;
+        msgDiv.innerText = text;
+        chatMessages.appendChild(msgDiv);
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }
+
+      sendBtn.addEventListener('click', sendMessage);
+      chatInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') sendMessage();
+      });
+    })();
+  </script>
+</body>
+
 </html>

@@ -1,69 +1,95 @@
 "use client";
-import React, { createContext, useContext, useRef, useState, useEffect } from "react";
+import React, { useRef } from "react";
 
-/** Contexto para compartir el ref del “body” y actualizar transform */
-const TiltContext = createContext(null);
+const cn = (...classes) => classes.filter(Boolean).join(" ");
 
-/* ------------------------------
-   CardContainer
-   - maneja el mouse y setea rotaciones en CardBody vía contexto
---------------------------------*/
-export function CardContainer({ children, className = "", rotateSensitivity = 20, ...props }) {
-  const bodyRef = useRef(null);
-  const [dims, setDims] = useState({ w: 0, h: 0, x: 0, y: 0 });
+/**
+ * CardContainer
+ * - maneja el tilt 3D
+ * - limita el ángulo para que no “desaparezca”
+ * - se frena cuando el mouse se queda quieto
+ */
+export function CardContainer({ children, className = "", ...props }) {
+  const rootRef = useRef(null);
+  const frameRef = useRef(0);
 
-  useEffect(() => {
-    const el = bodyRef.current?.parentElement; // el contenedor visible
+  const target = useRef({ x: 0, y: 0 });
+  const current = useRef({ x: 0, y: 0 });
+
+  const maxRotate = 10; // 🔹 límite en grados
+
+  const update = () => {
+    const el = rootRef.current;
+    if (!el) {
+      frameRef.current = 0;
+      return;
+    }
+
+    const damping = 0.12; // suavizado
+    current.current.x += (target.current.x - current.current.x) * damping;
+    current.current.y += (target.current.y - current.current.y) * damping;
+
+    // si ya casi no se mueve, lo dejamos en 0 y frenamos el loop
+    if (
+      Math.abs(current.current.x - target.current.x) < 0.02 &&
+      Math.abs(current.current.y - target.current.y) < 0.02 &&
+      Math.abs(target.current.x) < 0.05 &&
+      Math.abs(target.current.y) < 0.05
+    ) {
+      current.current = { x: 0, y: 0 };
+      el.style.setProperty("--card-rotate-x", "0deg");
+      el.style.setProperty("--card-rotate-y", "0deg");
+      frameRef.current = 0;
+      return;
+    }
+
+    el.style.setProperty("--card-rotate-x", `${current.current.x}deg`);
+    el.style.setProperty("--card-rotate-y", `${current.current.y}deg`);
+
+    frameRef.current = requestAnimationFrame(update);
+  };
+
+  const scheduleUpdate = () => {
+    if (!frameRef.current) {
+      frameRef.current = requestAnimationFrame(update);
+    }
+  };
+
+  const handleMouseMove = (e) => {
+    const el = rootRef.current;
     if (!el) return;
+
     const rect = el.getBoundingClientRect();
-    setDims({ w: rect.width, h: rect.height, x: rect.left, y: rect.top });
-  }, []);
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
 
-  const handleMove = (e) => {
-    const x = e.clientX - dims.x;
-    const y = e.clientY - dims.y;
-    const rx = ((y - dims.h / 2) / (dims.h / 2)) * -rotateSensitivity; // invertimos X/Y para sensación natural
-    const ry = ((x - dims.w / 2) / (dims.w / 2)) * rotateSensitivity;
+    const midX = rect.width / 2;
+    const midY = rect.height / 2;
 
-    if (bodyRef.current) {
-      bodyRef.current.style.setProperty("--rx", `${rx.toFixed(2)}deg`);
-      bodyRef.current.style.setProperty("--ry", `${ry.toFixed(2)}deg`);
-      bodyRef.current.style.setProperty("--tz", `35px`);
-    }
+    // mapeamos posición -> rotación limitada
+    let rotateY = ((x - midX) / midX) * maxRotate;
+    let rotateX = ((midY - y) / midY) * maxRotate;
+
+    // clamp por seguridad
+    rotateX = Math.max(-maxRotate, Math.min(maxRotate, rotateX));
+    rotateY = Math.max(-maxRotate, Math.min(maxRotate, rotateY));
+
+    target.current = { x: rotateX, y: rotateY };
+    scheduleUpdate();
   };
 
-  const handleLeave = () => {
-    if (bodyRef.current) {
-      bodyRef.current.style.setProperty("--rx", `0deg`);
-      bodyRef.current.style.setProperty("--ry", `0deg`);
-      bodyRef.current.style.setProperty("--tz", `0px`);
-    }
+  const handleMouseLeave = () => {
+    // volver suave al centro
+    target.current = { x: 0, y: 0 };
+    scheduleUpdate();
   };
 
   return (
     <div
-      className={`td3d-container ${className}`}
-      onMouseMove={handleMove}
-      onMouseLeave={handleLeave}
-      {...props}
-    >
-      <TiltContext.Provider value={{ bodyRef }}>
-        {children}
-      </TiltContext.Provider>
-    </div>
-  );
-}
-
-/* ------------------------------
-   CardBody
-   - elemento que rota en 3D
---------------------------------*/
-export function CardBody({ children, className = "", ...props }) {
-  const { bodyRef } = useContext(TiltContext) || {};
-  return (
-    <div
-      ref={bodyRef}
-      className={`td3d-body ${className}`}
+      ref={rootRef}
+      className={cn("card3d", className)}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
       {...props}
     >
       {children}
@@ -71,20 +97,46 @@ export function CardBody({ children, className = "", ...props }) {
   );
 }
 
-/* ------------------------------
-   CardItem
-   - hijo con profundidad (parallax) usando translateZ
-   - translateZ acepta string o número
---------------------------------*/
-export function CardItem({ children, className = "", translateZ = 0, as: As = "div", ...props }) {
-  const tz = typeof translateZ === "number" ? `${translateZ}px` : translateZ;
+/**
+ * CardBody
+ * - aplica el transform 3D
+ */
+export function CardBody({ children, className = "", style, ...props }) {
   return (
-    <As
-      className={`td3d-item ${className}`}
-      style={{ transform: `translateZ(${tz})` }}
+    <div
+      className={cn("card3d-body", className)}
+      style={style}
       {...props}
     >
       {children}
-    </As>
+    </div>
+  );
+}
+
+/**
+ * CardItem
+ * - elementos internos con profundidad (translateZ)
+ */
+export function CardItem({
+  children,
+  className = "",
+  translateZ = 0,
+  as: Component = "div",
+  style,
+  ...props
+}) {
+  const z = typeof translateZ === "string" ? parseFloat(translateZ) || 0 : translateZ;
+
+  return (
+    <Component
+      className={cn("card3d-item", className)}
+      style={{
+        transform: `translateZ(${z}px)`,
+        ...style,
+      }}
+      {...props}
+    >
+      {children}
+    </Component>
   );
 }
