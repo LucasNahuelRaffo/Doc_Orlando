@@ -17,6 +17,20 @@ export default function CheckoutForm({ onSuccess }) {
 
         setIsLoading(true);
 
+        const paymentElement = elements.getElement(PaymentElement);
+        if (!paymentElement) {
+            setMessage("El formulario de pago no termino de cargar. Espera y reintenta.");
+            setIsLoading(false);
+            return;
+        }
+
+        const { error: submitError } = await elements.submit();
+        if (submitError) {
+            setMessage(submitError.message);
+            setIsLoading(false);
+            return;
+        }
+
         const { error, paymentIntent } = await stripe.confirmPayment({
             elements,
             confirmParams: {

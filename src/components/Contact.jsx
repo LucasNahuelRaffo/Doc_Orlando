@@ -22,6 +22,8 @@ import iconLocation from "../img/Asset 12.png";
 import iconPhone from "../img/Asset 9.png";
 import iconEmail from "../img/Asset 10.png";
 
+const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
+
 export default function Contact() {
   const rootRef = useRef(null);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -253,7 +255,6 @@ function MultiStepForm({ onDropdownToggle }) {
 
   // Stripe
   const [clientSecret, setClientSecret] = useState("");
-  const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
 
   const procedimientos = [
     {
